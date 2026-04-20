@@ -46,7 +46,7 @@ async function loadRecipes() {
         <img src="${recipe.image_url}" alt="${recipe.title}" class="mb-4 h-48 w-full rounded-3xl object-cover" />
         <div class="mb-4">
           <h3 class="text-xl font-semibold text-slate-900">${recipe.title}</h3>
-          <p class="mt-2 text-slate-600">R$ ${recipe.price.toFixed(2)}</p>
+          
         </div>
         <button onclick="deleteRecipe(${recipe.id})" class="w-full rounded-2xl bg-red-500 px-4 py-3 text-sm font-semibold text-white hover:bg-red-600">Deletar</button>
       </article>
@@ -60,9 +60,7 @@ async function loadRecipes() {
 async function createRecipe() {
   const title = document.getElementById("title").value;
   const description = document.getElementById("description").value;
-  const price = Number(document.getElementById("price").value);
   const image_url = document.getElementById("img").value;
-  const whatsapp_number = document.getElementById("whatsapp").value;
 
   const res = await fetch(`${API}/recipes`, {
     method: "POST",
@@ -70,10 +68,7 @@ async function createRecipe() {
     body: JSON.stringify({
       title,
       description,
-      price,
       image_url,
-      whatsapp_number,
-      whatsapp_message: `Quero comprar ${title}`,
     }),
   });
 

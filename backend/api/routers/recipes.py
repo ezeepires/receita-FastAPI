@@ -12,11 +12,6 @@ from urllib.parse import quote_plus
 
 router = APIRouter(prefix="/recipes", tags=["recipes"])
 
-
-def gerar_link_whatsapp(numero: str, mensagem: str) -> str:
-    return f"https://wa.me/{numero}?text={quote_plus(mensagem)}"
-
-
 @router.get("")
 def recipes_list():
     return list_recipes()
@@ -27,9 +22,7 @@ def recipe_detail(recipe_id: int):
     recipe = get_recipe(recipe_id)
     if not recipe:
         raise HTTPException(status_code=404, detail="Receita não encontrada")
-
-    mensagem = f"Quero comprar: {recipe['title']} por R$ {recipe['price']}"
-    recipe["buy_link"] = gerar_link_whatsapp(recipe["whatsapp_number"], mensagem)
+    
     return recipe
 
 
