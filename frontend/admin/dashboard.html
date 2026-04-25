@@ -3,29 +3,53 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard Admin</title>
+  <title>Dashboard Admin - NSL Receitas</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Poppins', sans-serif; }
+    .gradient-text { background: linear-gradient(135deg, #f97316, #ea580c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .recipe-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .recipe-card:hover { transform: translateY(-3px); }
+  </style>
 </head>
 
-<body class="bg-slate-100 min-h-screen">
-  <header class="bg-orange-500 text-white shadow-sm">
+<body class="bg-gradient-to-br from-slate-50 via-orange-50 to-slate-100 min-h-screen flex flex-col">
+  <header class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50 flex-none">
     <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-5">
       <div>
-        <h1 class="text-2xl font-bold">Painel Admin</h1>
-        <p class="text-orange-100">Gerencie receitas e atualize o catálogo.</p>
+        <h1 class="text-2xl font-bold gradient-text">NSL Receitas</h1>
+        <p class="text-slate-500 text-sm">Painel Administrativo</p>
       </div>
-      <button onclick="logout()" class="rounded-2xl bg-white px-4 py-2 text-orange-600 shadow-sm hover:bg-orange-50">Sair</button>
+      <div class="flex items-center gap-4">
+        <a href="../public/index.html" class="text-sm text-slate-500 hover:text-orange-500">Ver site</a>
+        <button onclick="logout()" class="rounded-full bg-slate-100 px-4 py-2 text-slate-600 hover:bg-slate-200 transition-all">Sair</button>
+      </div>
     </div>
   </header>
 
-  <main class="mx-auto max-w-6xl px-4 py-10">
+  <main class="mx-auto max-w-6xl px-4 py-8 flex-1 w-full">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8">
-      <h2 class="text-xl font-semibold text-slate-900">Receitas cadastradas</h2>
-      <a href="create.html" class="inline-flex items-center justify-center rounded-2xl bg-green-500 px-5 py-3 text-sm font-semibold text-white shadow hover:bg-green-600">+ Nova Receita</a>
+      <div>
+        <h2 class="text-xl font-semibold text-slate-800">Receitas cadastradas</h2>
+        <p class="text-sm text-slate-500">Gerencie seu catálogo de receitas</p>
+      </div>
+      <a href="create.html" class="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-green-500 to-green-600 px-5 py-3 text-sm font-medium text-white shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40 transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Nova Receita
+      </a>
     </div>
 
-    <div id="list" class="grid gap-6 sm:grid-cols-2 xl:grid-cols-3"></div>
+    <div id="list" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"></div>
   </main>
+
+  <footer class="mt-auto bg-white/50 backdrop-blur-sm border-t border-slate-200/50 py-4">
+    <div class="mx-auto max-w-6xl px-4 text-center">
+      <p class="text-slate-500 text-sm">© Desenvolvido por <a href="https://github.com/ezeepires" target="_blank" class="text-orange-500 hover:underline">Ezequiel Pires</a></p>
+    </div>
+  </footer>
 
   <script src="../assets/admin.js"></script>
 </body>

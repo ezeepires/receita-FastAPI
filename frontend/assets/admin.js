@@ -60,16 +60,21 @@ async function loadRecipes() {
 async function createRecipe() {
   const title = document.getElementById("title").value;
   const description = document.getElementById("description").value;
-  const image_url = document.getElementById("img").value;
+  const image = document.getElementById("image").files[0];
+
+  const formData = new FormData();
+  formData.append("title", title);
+  formData.append("description", description);
+  if (image) {
+    formData.append("image", image);
+  }
 
   const res = await fetch(`${API}/recipes`, {
     method: "POST",
-    headers: authHeader(),
-    body: JSON.stringify({
-      title,
-      description,
-      image_url,
-    }),
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem(TOKEN_KEY)}`,
+    },
+    body: formData,
   });
 
   if (res.ok) {

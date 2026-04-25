@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from backend.schemas.recipe_schema import Recipe
 from backend.core.auth import verify_admin
 from backend.services.recipe_service import (
@@ -7,6 +7,7 @@ from backend.services.recipe_service import (
     create_recipe,
     update_recipe,
     delete_recipe,
+    upload_image,
 )
 from urllib.parse import quote_plus
 
@@ -27,8 +28,21 @@ def recipe_detail(recipe_id: int):
 
 
 @router.post("", dependencies=[Depends(verify_admin)])
-def recipe_create(recipe: Recipe):
-    return create_recipe(recipe.dict())
+async def recipe_create(
+    title: str = Form(...),
+    description: str = Form(...),
+    image: UploadFile = File(None)
+):
+    image_url = None
+    if image:
+        image_url = await upload_image(image)
+    
+    recipe_data = {
+        "title": title,
+        "description": description,
+        "image_url": image_url or "",
+    }
+    return create_recipe(recipe_data)
 
 
 @router.put("/{recipe_id}", dependencies=[Depends(verify_admin)])

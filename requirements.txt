@@ -5,3 +5,6 @@ bcrypt
 python-jose
 pydantic
 pydantic-settings
+python-multipart
+slowapi
+httpx
