@@ -1,10 +1,15 @@
-const API = "http://localhost:8000";
+// Detecta automaticamente se está em localhost ou no Render
+const API = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+  ? "http://localhost:8000"
+  : window.location.origin;
+
 const TOKEN_KEY = "token";
 
+// Helper para cabeçalhos de autenticação
 function authHeader() {
+  const token = localStorage.getItem(TOKEN_KEY);
   return {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${localStorage.getItem(TOKEN_KEY)}`,
+    "Authorization": `Bearer ${token}`,
   };
 }
 
@@ -19,48 +24,64 @@ async function login() {
   const username = document.getElementById("user").value;
   const password = document.getElementById("pass").value;
 
-  const res = await fetch(`${API}/admin/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password }),
-  });
+  try {
+    const res = await fetch(`${API}/admin/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
 
-  const data = await res.json();
+    const data = await res.json();
 
-  if (res.ok && data.token) {
-    localStorage.setItem(TOKEN_KEY, data.token);
-    window.location.href = "dashboard.html";
-  } else {
-    alert(data.detail || "Erro ao autenticar");
+    if (res.ok && data.token) {
+      localStorage.setItem(TOKEN_KEY, data.token);
+      window.location.href = "dashboard.html";
+    } else {
+      alert(data.detail || "Erro ao autenticar");
+    }
+  } catch (error) {
+    console.error("Erro no login:", error);
+    alert("Não foi possível conectar ao servidor.");
   }
 }
 
 async function loadRecipes() {
-  const res = await fetch(`${API}/recipes`);
-  const data = await res.json();
+  try {
+    const res = await fetch(`${API}/recipes`);
+    const data = await res.json();
 
-  const html = data
-    .map(
-      (recipe) => `
-      <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-        <img src="${recipe.image_url}" alt="${recipe.title}" class="mb-4 h-48 w-full rounded-3xl object-cover" />
-        <div class="mb-4">
-          <h3 class="text-xl font-semibold text-slate-900">${recipe.title}</h3>
-          
-        </div>
-        <button onclick="deleteRecipe(${recipe.id})" class="w-full rounded-2xl bg-red-500 px-4 py-3 text-sm font-semibold text-white hover:bg-red-600">Deletar</button>
-      </article>
-    `
-    )
-    .join("");
+    if (!res.ok) throw new Error("Erro ao carregar receitas");
 
-  document.getElementById("list").innerHTML = html;
+    const html = data
+      .map(
+        (recipe) => `
+        <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <img src="${recipe.image_url || 'https://via.placeholder.com/400x300?text=Sem+Imagem'}" alt="${recipe.title}" class="mb-4 h-48 w-full rounded-3xl object-cover" />
+          <div class="mb-4">
+            <h3 class="text-xl font-semibold text-slate-900">${recipe.title}</h3>
+          </div>
+          <button onclick="deleteRecipe(${recipe.id})" class="w-full rounded-2xl bg-red-500 px-4 py-3 text-sm font-semibold text-white hover:bg-red-600 transition-colors">Deletar</button>
+        </article>
+      `
+      )
+      .join("");
+
+    const listElement = document.getElementById("list");
+    if (listElement) listElement.innerHTML = html;
+  } catch (error) {
+    console.error("Erro ao carregar receitas:", error);
+  }
 }
 
 async function createRecipe() {
   const title = document.getElementById("title").value;
   const description = document.getElementById("description").value;
   const image = document.getElementById("image").files[0];
+
+  if (!title || !description) {
+    alert("Título e descrição são obrigatórios");
+    return;
+  }
 
   const formData = new FormData();
   formData.append("title", title);
@@ -69,34 +90,46 @@ async function createRecipe() {
     formData.append("image", image);
   }
 
-  const res = await fetch(`${API}/recipes`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem(TOKEN_KEY)}`,
-    },
-    body: formData,
-  });
+  try {
+    const res = await fetch(`${API}/recipes`, {
+      method: "POST",
+      headers: authHeader(), // Usa o helper de autorização
+      body: formData,
+    });
 
-  if (res.ok) {
-    alert("Receita criada com sucesso!");
-    window.location.href = "dashboard.html";
-  } else {
-    const data = await res.json();
-    alert(data.detail || "Erro ao criar receita");
+    if (res.ok) {
+      alert("Receita criada com sucesso!");
+      window.location.href = "dashboard.html";
+    } else {
+      const data = await res.json();
+      alert(data.detail || "Erro ao criar receita");
+    }
+  } catch (error) {
+    console.error("Erro ao criar receita:", error);
+    alert("Falha na conexão com o servidor.");
   }
 }
 
 async function deleteRecipe(id) {
-  const res = await fetch(`${API}/recipes/${id}`, {
-    method: "DELETE",
-    headers: authHeader(),
-  });
+  if (!confirm("Tem certeza que deseja excluir esta receita?")) return;
 
-  if (res.ok) {
-    loadRecipes();
-  } else {
-    const data = await res.json();
-    alert(data.detail || "Erro ao deletar receita");
+  try {
+    const res = await fetch(`${API}/recipes/${id}`, {
+      method: "DELETE",
+      headers: {
+        ...authHeader(),
+        "Content-Type": "application/json"
+      },
+    });
+
+    if (res.ok) {
+      loadRecipes();
+    } else {
+      const data = await res.json();
+      alert(data.detail || "Erro ao deletar receita");
+    }
+  } catch (error) {
+    console.error("Erro ao deletar:", error);
   }
 }
 
@@ -105,12 +138,16 @@ function logout() {
   window.location.href = "login.html";
 }
 
-if (window.location.pathname.endsWith("dashboard.html")) {
-  ensureAuth();
-  loadRecipes();
-}
+// Inicialização baseada na página atual
+document.addEventListener("DOMContentLoaded", () => {
+  const path = window.location.pathname;
+  
+  if (path.includes("dashboard.html")) {
+    ensureAuth();
+    loadRecipes();
+  }
 
-if (window.location.pathname.endsWith("create.html")) {
-  ensureAuth();
-}
-
+  if (path.includes("create.html")) {
+    ensureAuth();
+  }
+});

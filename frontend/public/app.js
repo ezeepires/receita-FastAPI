@@ -1,8 +1,21 @@
-const API = "http://localhost:8000";
+// Detecta automaticamente se está em produção ou desenvolvimento
+const API = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+  ? "http://localhost:8000"
+  : window.location.origin;
 
 async function fetchRecipes() {
-  const response = await fetch(`${API}/recipes`);
-  return response.ok ? response.json() : [];
+  try {
+    const response = await fetch(`${API}/recipes`);
+    // Se a resposta for ok (200), retorna o JSON, senão retorna lista vazia
+    if (!response.ok) {
+      console.error("Erro na resposta da API:", response.status);
+      return [];
+    }
+    return await response.json();
+  } catch (error) {
+    console.error("Erro ao buscar receitas (Verifique se o backend está rodando):", error);
+    return [];
+  }
 }
 
 function renderRecipes(recipes) {
@@ -11,18 +24,20 @@ function renderRecipes(recipes) {
   
   if (!recipes || recipes.length === 0) {
     container.innerHTML = "";
-    emptyState.classList.remove("hidden");
+    if (emptyState) emptyState.classList.remove("hidden");
     return;
   }
   
-  emptyState.classList.add("hidden");
+  if (emptyState) emptyState.classList.add("hidden");
   
   container.innerHTML = recipes.map((recipe, index) => {
     const maxChars = 120;
-    const isLong = recipe.description.length > maxChars;
+    // Garante que a descrição existe para evitar erro de .length
+    const desc = recipe.description || "";
+    const isLong = desc.length > maxChars;
     const shortDesc = isLong 
-      ? recipe.description.substring(0, maxChars) + "..." 
-      : recipe.description;
+      ? desc.substring(0, maxChars) + "..." 
+      : desc;
     
     const imageStyle = recipe.image_url 
       ? `background-image: url('${recipe.image_url}'); background-size: cover; background-position: center;`
@@ -37,7 +52,7 @@ function renderRecipes(recipes) {
         <h2 class="text-xl font-bold text-slate-800 mb-3 line-clamp-2">${recipe.title}</h2>
         <div class="recipe-content">
           <p class="text-sm text-slate-600 mb-4 whitespace-pre-line short-desc leading-relaxed">${shortDesc.replace(/\\n/g, '\n')}</p>
-          <p class="text-sm text-slate-600 mb-4 whitespace-pre-line full-desc hidden leading-relaxed">${recipe.description.replace(/\\n/g, '\n')}</p>
+          <p class="text-sm text-slate-600 mb-4 whitespace-pre-line full-desc hidden leading-relaxed">${desc.replace(/\\n/g, '\n')}</p>
           ${isLong ? `<button class="text-orange-500 font-semibold text-sm hover:underline toggle-btn" onclick="toggleRecipe(this)">Ver tudo</button>` : ''}
         </div>
       </div>
@@ -65,8 +80,8 @@ function filterRecipes(recipes, query) {
   if (!query) return recipes;
   const lowerQuery = query.toLowerCase();
   return recipes.filter(recipe =>
-    recipe.title.toLowerCase().includes(lowerQuery) ||
-    recipe.description.toLowerCase().includes(lowerQuery)
+    (recipe.title && recipe.title.toLowerCase().includes(lowerQuery)) ||
+    (recipe.description && recipe.description.toLowerCase().includes(lowerQuery))
   );
 }
 
@@ -76,9 +91,11 @@ async function initPage() {
 
   renderRecipes(recipes);
 
-  search.addEventListener("input", () => {
-    renderRecipes(filterRecipes(recipes, search.value));
-  });
+  if (search) {
+    search.addEventListener("input", () => {
+      renderRecipes(filterRecipes(recipes, search.value));
+    });
+  }
 }
 
 window.addEventListener("DOMContentLoaded", initPage);
