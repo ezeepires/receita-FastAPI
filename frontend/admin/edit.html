@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Nova Receita - NSL Receitas</title>
+  <title>Editar Receita - NSL Receitas</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -31,8 +31,8 @@
     <div class="mx-auto max-w-lg px-4 py-8">
       <div class="rounded-3xl bg-white/80 backdrop-blur-sm p-8 shadow-xl border border-slate-100">
         <div class="text-center mb-8">
-          <h1 class="text-2xl font-bold text-slate-800">Nova Receita</h1>
-          <p class="text-slate-500 text-sm mt-1">Preencha os dados e salve</p>
+          <h1 class="text-2xl font-bold text-slate-800">Editar Receita</h1>
+          <p class="text-slate-500 text-sm mt-1">Atualize os dados da receita</p>
         </div>
 
         <div class="grid gap-5">
@@ -44,8 +44,9 @@
 
           <div>
             <label class="block mb-2 text-sm font-medium text-slate-700">Imagem</label>
-            <input id="image" type="file" accept="image/*" required
+            <input id="image" type="file" accept="image/*"
               class="w-full rounded-2xl border border-slate-200 bg-white/70 px-4 py-3 focus:border-orange-400 focus:ring-4 focus:ring-orange-100 focus:outline-none transition-all file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100" />
+            <p class="text-xs text-slate-400 mt-1">Deixe vazio para manter a imagem atual</p>
           </div>
 
           <div>
@@ -54,9 +55,9 @@
               class="w-full rounded-2xl border border-slate-200 bg-white/70 px-4 py-3 focus:border-orange-400 focus:ring-4 focus:ring-orange-100 focus:outline-none transition-all resize-none"></textarea>
           </div>
 
-          <button onclick="createRecipe()"
-            class="mt-2 w-full rounded-2xl bg-gradient-to-r from-green-500 to-green-600 px-5 py-3 text-white font-medium shadow-lg shadow-green-500/30 hover:shadow-xl hover:shadow-green-500/40 transition-all">
-            Salvar Receita
+          <button onclick="updateRecipe()"
+            class="mt-2 w-full rounded-2xl bg-gradient-to-r from-orange-500 to-orange-600 px-5 py-3 text-white font-medium shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-orange-500/40 transition-all">
+            Atualizar Receita
           </button>
         </div>
       </div>

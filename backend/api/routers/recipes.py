@@ -31,23 +31,41 @@ def recipe_detail(recipe_id: int):
 async def recipe_create(
     title: str = Form(...),
     description: str = Form(...),
-    image: UploadFile = File(None)
+    image: UploadFile = File(...)
 ):
-    image_url = None
-    if image:
-        image_url = await upload_image(image)
+    image_url = await upload_image(image)
     
     recipe_data = {
         "title": title,
         "description": description,
-        "image_url": image_url or "",
+        "image_url": image_url,
     }
     return create_recipe(recipe_data)
 
 
 @router.put("/{recipe_id}", dependencies=[Depends(verify_admin)])
-def recipe_update(recipe_id: int, recipe: Recipe):
-    return update_recipe(recipe_id, recipe.dict())
+async def recipe_update(
+    recipe_id: int,
+    title: str = Form(...),
+    description: str = Form(...),
+    image: UploadFile = File(None)
+):
+    recipe_data = {
+        "title": title,
+        "description": description,
+    }
+
+    existing = get_recipe(recipe_id)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Receita não encontrada")
+
+    if image and image.filename:
+        image_url = await upload_image(image)
+        recipe_data["image_url"] = image_url
+    else:
+        recipe_data["image_url"] = existing.get("image_url", "")
+
+    return update_recipe(recipe_id, recipe_data)
 
 
 @router.delete("/{recipe_id}", dependencies=[Depends(verify_admin)])

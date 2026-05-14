@@ -60,7 +60,10 @@ async function loadRecipes() {
           <div class="mb-4">
             <h3 class="text-xl font-semibold text-slate-900">${recipe.title}</h3>
           </div>
-          <button onclick="deleteRecipe(${recipe.id})" class="w-full rounded-2xl bg-red-500 px-4 py-3 text-sm font-semibold text-white hover:bg-red-600 transition-colors">Deletar</button>
+          <div class="flex gap-2">
+            <a href="edit.html?id=${recipe.id}" class="flex-1 rounded-2xl bg-orange-500 px-4 py-3 text-sm font-semibold text-white hover:bg-orange-600 transition-colors text-center">Editar</a>
+            <button onclick="deleteRecipe(${recipe.id})" class="flex-1 rounded-2xl bg-red-500 px-4 py-3 text-sm font-semibold text-white hover:bg-red-600 transition-colors">Deletar</button>
+          </div>
         </article>
       `
       )
@@ -83,12 +86,15 @@ async function createRecipe() {
     return;
   }
 
+  if (!image) {
+    alert("Imagem é obrigatória");
+    return;
+  }
+
   const formData = new FormData();
   formData.append("title", title);
   formData.append("description", description);
-  if (image) {
-    formData.append("image", image);
-  }
+  formData.append("image", image);
 
   try {
     const res = await fetch(`${API}/recipes`, {
@@ -133,6 +139,76 @@ async function deleteRecipe(id) {
   }
 }
 
+async function loadRecipe() {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+
+  if (!id) {
+    alert("ID da receita não informado");
+    window.location.href = "dashboard.html";
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/recipes/${id}`);
+    const recipe = await res.json();
+
+    if (!res.ok) throw new Error(recipe.detail || "Erro ao carregar receita");
+
+    document.getElementById("title").value = recipe.title;
+    document.getElementById("description").value = recipe.description;
+  } catch (error) {
+    console.error("Erro ao carregar receita:", error);
+    alert("Não foi possível carregar os dados da receita.");
+    window.location.href = "dashboard.html";
+  }
+}
+
+async function updateRecipe() {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+
+  if (!id) {
+    alert("ID da receita não informado");
+    return;
+  }
+
+  const title = document.getElementById("title").value;
+  const description = document.getElementById("description").value;
+  const image = document.getElementById("image").files[0];
+
+  if (!title || !description) {
+    alert("Título e descrição são obrigatórios");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("title", title);
+  formData.append("description", description);
+  if (image) {
+    formData.append("image", image);
+  }
+
+  try {
+    const res = await fetch(`${API}/recipes/${id}`, {
+      method: "PUT",
+      headers: authHeader(),
+      body: formData,
+    });
+
+    if (res.ok) {
+      alert("Receita atualizada com sucesso!");
+      window.location.href = "dashboard.html";
+    } else {
+      const data = await res.json();
+      alert(data.detail || "Erro ao atualizar receita");
+    }
+  } catch (error) {
+    console.error("Erro ao atualizar receita:", error);
+    alert("Falha na conexão com o servidor.");
+  }
+}
+
 function logout() {
   localStorage.removeItem(TOKEN_KEY);
   window.location.href = "login.html";
@@ -149,5 +225,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (path.includes("create.html")) {
     ensureAuth();
+  }
+
+  if (path.includes("edit.html")) {
+    ensureAuth();
+    loadRecipe();
   }
 });
